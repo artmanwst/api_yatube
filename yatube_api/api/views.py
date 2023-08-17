@@ -11,15 +11,13 @@ from posts.models import (
     Post,
     Group,
     Comment,
-    Follow
-    )
+    Follow)
 from api.permissions import IsAuthorOrReadOnly
 from api.serializers import (
-        PostSerializer,
-        GroupSerializer,
-        CommentSerializer,
-        FollowSerializer
-    )
+    PostSerializer,
+    GroupSerializer,
+    CommentSerializer,
+    FollowSerializer)
 
 
 class PostViewSet(ModelViewSet):
