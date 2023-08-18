@@ -1,16 +1,18 @@
 from django.urls import include, path
 from rest_framework.authtoken import views
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
 
 from api.views import CommentViewSet, GroupViewSet, PostViewSet
 
-router = SimpleRouter()
-router.register('api/v1/posts', PostViewSet)
-router.register('api/v1/groups', GroupViewSet)
-router.register(r'api/v1/posts/(?P<pk1>[^/.]+)/comments', CommentViewSet)
+router1 = DefaultRouter()
+
+router1.register('posts', PostViewSet, basename='posts')
+router1.register('groups', GroupViewSet, basename='groups')
+router1.register(r'posts/(?P<post_pk>\d+)/comments', CommentViewSet,
+                 basename='comments')
 
 
 urlpatterns = [
-    path('api/v1/api-token-auth/', views.obtain_auth_token),
-    path('', include(router.urls)),
+    path('v1/api-token-auth/', views.obtain_auth_token, name='auth'),
+    path('v1/', include(router1.urls)),
 ]
