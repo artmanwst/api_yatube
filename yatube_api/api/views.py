@@ -6,22 +6,25 @@ from api.serializers import CommentSerializer, GroupSerializer, PostSerializer
 from posts.models import Group, Post
 
 
-class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
+class BaseContentViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
+        instance = serializer.instance
+        if instance.author != self.request.user:
             raise PermissionDenied('Изменение чужого контента запрещено!')
-        super(PostViewSet, self).perform_update(serializer)
+        super().perform_update(serializer)
 
     def perform_destroy(self, instance):
         if instance.author != self.request.user:
             raise PermissionDenied('Удаление чужого контента запрещено!')
         return super().perform_destroy(instance)
+
+
+class PostViewSet(BaseContentViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -31,7 +34,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'head']
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(BaseContentViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
@@ -41,13 +44,3 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         post = get_object_or_404(Post, pk=self.kwargs['post_pk'])
         serializer.save(author=self.request.user, post=post)
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение чужого контента запрещено!')
-        super(CommentViewSet, self).perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        if instance.author != self.request.user:
-            raise PermissionDenied('Удаление чужого контента запрещено!')
-        return super().perform_destroy(instance)
